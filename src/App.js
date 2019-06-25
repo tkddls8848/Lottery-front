@@ -37,11 +37,11 @@ class App extends Component {
 
     this.lotteryContract = new this.web3.eth.Contract(lotteryABI, lotteryAddress);
 
-    let pot = await this.lotteryContract.methods.getPot().call();
-    console.log(`pot : ${pot}`);
+    // let pot = await this.lotteryContract.methods.getPot().call();
+    // console.log(`pot : ${pot}`);
 
-    let owner = await this.lotteryContract.methods.owner().call();
-    console.log(`owner : ${owner}`);
+    // let owner = await this.lotteryContract.methods.owner().call();
+    // console.log(`owner : ${owner}`);
 
     //this.lotteryContract.methods.betAndDistribute('0xcd').send({from:this.account, value:5000000000000000, gas:300000});
 
@@ -53,8 +53,8 @@ class App extends Component {
   }
 
   getBetEvent = async () => {
-    let event = await this.lotteryContract.getPastEvents('BET', {fromBlock:0, toBlock:'latest'});
-    console.log(`event : ${event}`);
+    let events = await this.lotteryContract.getPastEvents('BET', {fromBlock:0, toBlock:'latest'});
+    console.log(events);
   }
 
   render() {
