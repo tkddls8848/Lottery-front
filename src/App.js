@@ -8,6 +8,26 @@ let lotteryABI = [ { "constant": true, "inputs": [], "name": "answerForTest", "o
 
 class App extends Component {
 
+constructor (props) {
+  super(props);
+
+  this.state = {
+    betRecodes : [],
+    winRecodes : [],
+    loseRecodes : [],  
+    potMoney : '0',
+    challenges : ['A', 'B'],
+    ResultRecode : [{
+      betAddress : '',
+      index : '0',
+      challenges : '',
+      answer : '',
+      answerBlockNumber : '',
+      pot : ''
+    }]  
+  }
+}
+
   async componentDidMount(){
     await this.initWeb3();
     console.log(this.web3);
@@ -57,23 +77,35 @@ class App extends Component {
     console.log(events);
   }
 
+  getCard = (character, style) => {
+    return(
+      <button className={style}>
+        <div className="card-body text-center">Primary card</div>
+        <p className='card-text'></p>
+        <p className='card-text'>{character}</p>
+        <p className='card-text'></p>
+      </button>
+    )
+  }
+
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+        <div className="container">
+          <div className="jumbotron">
+            <h1>Lottery</h1>
+            challenges : {this.state.challenges[0]} {this.state.challenges[1]}
+            <h3>Pot Money : {this.state.potMoney}</h3>
+          </div>
+        </div>
+        <div className='container'>
+          <div className='card-group'>
+            {this.getCard('A', 'card bg-primary')}
+            {this.getCard('A', 'card bg-info')}
+            {this.getCard('A', 'card bg-danger')}
+            {this.getCard('A', 'card bg-warning')}
+          </div>
+        </div>
       </div>
     );
   }
