@@ -82,7 +82,7 @@ constructor (props) {
       <button className={style}>
         <div className="card-body text-center">Primary card</div>
         <p className='card-text'></p>
-        <p className='card-text'>{character}</p>
+        <p className='card-text' style={{textalign:'center', fontSize:100}}>{character}</p>
         <p className='card-text'></p>
       </button>
     )
@@ -100,11 +100,64 @@ constructor (props) {
         </div>
         <div className='container'>
           <div className='card-group'>
-            {this.getCard('A', 'card bg-primary')}
-            {this.getCard('A', 'card bg-info')}
-            {this.getCard('A', 'card bg-danger')}
-            {this.getCard('A', 'card bg-warning')}
+            {this.getCard('0', 'card bg-primary')}
+            {this.getCard('1', 'card bg-info')}
+            {this.getCard('2', 'card bg-danger')}
+            {this.getCard('3', 'card bg-warning')}
           </div>
+          <div className='card-group'>
+            {this.getCard('4', 'card bg-primary')}
+            {this.getCard('5', 'card bg-info')}
+            {this.getCard('6', 'card bg-danger')}
+            {this.getCard('7', 'card bg-warning')}
+          </div>
+          <div className='card-group'>
+            {this.getCard('8', 'card bg-primary')}
+            {this.getCard('9', 'card bg-info')}
+            {this.getCard('A', 'card bg-danger')}
+            {this.getCard('B', 'card bg-warning')}
+          </div>
+          <div className='card-group'>
+            {this.getCard('C', 'card bg-primary')}
+            {this.getCard('D', 'card bg-info')}
+            {this.getCard('E', 'card bg-danger')}
+            {this.getCard('F', 'card bg-warning')}
+          </div>
+        </div>
+        <br></br>
+        <div className='container'>
+          <button className='btn btn-danger btn-lg'>BET</button>
+        </div>
+        <br></br>
+        <div className='container'>
+          <table className='table table-dark table-striped'>
+            <thead>
+              <tr>
+                <td>Index</td>
+                <td>Address</td>
+                <td>Challenges</td>
+                <td>Answer</td>
+                <td>AnswerBlockNumber</td>
+                <td>Status</td>
+                <td>PotMoney</td>
+              </tr>
+            </thead>
+            <tbody>
+                {this.state.ResultRecode.map((index,recode) => {
+                  return (
+                    <tr key={index}>
+                      <td>Index</td>
+                      <td>Address</td>
+                      <td>Challenges</td>
+                      <td>Answer</td>
+                      <td>AnswerBlockNumber</td>
+                      <td>Status</td>
+                      <td>PotMoney</td>
+                    </tr>
+                  )
+                })}           
+            </tbody>
+          </table>
         </div>
       </div>
     );
