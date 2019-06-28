@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Web3 from 'web3';
 
@@ -12,12 +11,12 @@ constructor (props) {
   super(props);
 
   this.state = {
-    betRecodes : [],
-    winRecodes : [],
-    loseRecodes : [],  
+    betRecord : [],
+    winRecord : [],
+    loseRecord : [],  
     potMoney : '0',
     challenges : ['A', 'B'],
-    ResultRecode : [{
+    resultRecode : [{
       betAddress : '',
       index : '0',
       challenges : '',
@@ -30,10 +29,13 @@ constructor (props) {
 
   async componentDidMount(){
     await this.initWeb3();
-    console.log(this.web3);
-    let account = await this.web3.eth.getAccounts();
-    console.log(account);
+    // console.log(this.web3);
+    await this.pollData();
+  }
+
+  pollData = async () => {
     await this.getBetEvent();
+    await this.getPotmoney();
   }
 
   initWeb3 = async () => {
@@ -68,8 +70,21 @@ constructor (props) {
   }
 
   bet = async () => {
-    let nonce = await this.web3.eth.getBlockTransactionCount(this.account);
-    this.lotteryContract.methods.betAndDistribute('oxcd', {from:this.account, value:5000000000000000, gas:300000, nonce:nonce})
+    let accounts = await this.web3.eth.getAccounts();
+    let account = accounts[0];
+    
+    let tryChall = '0x' + this.state.challenges[0].toLowerCase() + this.state.challenges[1].toLowerCase()
+    let nonce = await this.web3.eth.getTransactionCount(account);
+    this.lotteryContract.methods.betAndDistribute(tryChall, {from:account, value:5000000000000000, gas:300000, nonce:nonce})
+    .on('transactionHash', (hash) => {
+      console.log(hash);
+    })
+  }
+
+  onClickCard = (character) => {
+    this.setState(
+      {challenges : [this.state.challenges[1], character]
+    });
   }
 
   getBetEvent = async () => {
@@ -77,13 +92,18 @@ constructor (props) {
     console.log(events);
   }
 
+  getPotmoney = async () => {
+    let pot = await this.lotteryContract.methods.getPot().call();
+    let potString = this.web3.utils.fromWei(pot.toString(),'ether');
+    this.setState({potMoney:potString});
+  }
+
   getCard = (character, style) => {
     return(
-      <button className={style}>
-        <div className="card-body text-center">Primary card</div>
-        <p className='card-text'></p>
-        <p className='card-text' style={{textalign:'center', fontSize:100}}>{character}</p>
-        <p className='card-text'></p>
+      <button className={style} onClick={() => this.onClickCard(character)}>
+        <div className="card-body text-center">Primary card
+          <p className='card-text' style={{fontSize:100}}>{character}</p>
+        </div>
       </button>
     )
   }
@@ -126,7 +146,7 @@ constructor (props) {
         </div>
         <br></br>
         <div className='container'>
-          <button className='btn btn-danger btn-lg'>BET</button>
+          <button className='btn btn-danger btn-lg' onClick={this.bet}>BET</button>
         </div>
         <br></br>
         <div className='container'>
@@ -143,7 +163,7 @@ constructor (props) {
               </tr>
             </thead>
             <tbody>
-                {this.state.ResultRecode.map((index,recode) => {
+                {this.state.resultRecode.map((index,recode) => {
                   return (
                     <tr key={index}>
                       <td>Index</td>
