@@ -17,6 +17,7 @@ constructor (props) {
     potMoney : '0',
     challenges : ['A', 'B'],
     resultRecord : [{
+      index:'0',
       betPerson : '',
       betNumber : '0',
       challenges : '',
@@ -29,12 +30,14 @@ constructor (props) {
 
   async componentDidMount(){
     await this.initWeb3();
-    // console.log(this.web3);
     await this.pollData();
   }
 
   pollData = async () => {
     await this.getBetEvent();
+    await this.getWinEvent();
+    await this.getLoseEvent();
+    this.makeResultRecords();
     await this.getPotmoney();
   }
 
@@ -59,14 +62,6 @@ constructor (props) {
 
     this.lotteryContract = new this.web3.eth.Contract(lotteryABI, lotteryAddress);
 
-    // let pot = await this.lotteryContract.methods.getPot().call();
-    // console.log(`pot : ${pot}`);
-
-    // let owner = await this.lotteryContract.methods.owner().call();
-    // console.log(`owner : ${owner}`);
-
-    //this.lotteryContract.methods.betAndDistribute('0xcd').send({from:this.account, value:5000000000000000, gas:300000});
-
   }
 
   bet = async () => {
@@ -80,7 +75,7 @@ constructor (props) {
       console.log(hash);
     });
 
-    
+
   }
 
   onClickCard = (character) => {
@@ -91,7 +86,6 @@ constructor (props) {
 
   getBetEvent = async () => {
     let events = await this.lotteryContract.getPastEvents('BET', {fromBlock:0, toBlock:'latest'});
-    console.log(events);
 
     const records = [];
     for(let i = 0 ; i < events.length ; i ++){
@@ -102,11 +96,67 @@ constructor (props) {
       record.answerBlockNumber = events[i].returnValues.answerBlockNumber.toString();
       record.challenges = events[i].returnValues.challenges;
       record.win = 'Not revealed';
-      record.answer = '0x00';
+      record.answer = '0x12';
       records.unshift(record);
     }
     console.log(records);
     this.setState({betRecord:records})
+  }
+
+  getWinEvent = async () => {
+    let events = await this.lotteryContract.getPastEvents('WIN', {fromBlock:0, toBlock:'latest'});
+
+    const records = [];
+    for(let i = 0 ; i < events.length ; i ++){
+      const record = {};
+      record.index = parseInt(events[i].returnValues.index, '10').toString();
+      record.amount = events[i].returnValues.amount;
+      records.unshift(record);
+    }
+    console.log(records);
+    this.setState({winRecord:records})
+  }
+
+  getLoseEvent = async () => {
+    let events = await this.lotteryContract.getPastEvents('LOSE', {fromBlock:0, toBlock:'latest'});
+
+    const records = [];
+    for(let i = 0 ; i < events.length ; i ++){
+      const record = {};
+      record.index = parseInt(events[i].returnValues.index, '10').toString();
+      record.answer = events[i].returnValues.answer;
+      records.unshift(record);
+    }
+    console.log(records);
+    this.setState({loseRecord:records})
+  }
+  
+  makeResultRecords = () => {
+    let w = 0;
+    let l = 0;
+    const records = [...this.state.betRecord];
+    for(let i = 0 ; i < this.state.betRecord.length ; i ++){
+      if(this.state.winRecord.length > 0 && this.state.betRecord[i].index === this.state.winRecord[w].index){
+        records[i].status = 'WIN';
+        records[i].answer = records[i].challenges;
+        records[i].pot = this.web3.utils.fromWei(this.state.winRecord[w].amount.toString(), 'ether');
+        if(this.state.winRecord.length - 1 > w){
+          w++;
+        }
+      } else if(this.state.loseRecord.length > 0 && this.state.loseRecord[l].index === this.state.betRecord[i].index){
+        records[i].status = 'LOSE';
+        records[i].answer = this.state.loseRecord[l].answer;
+        records[i].pot = 0;
+        if(this.state.loseRecord.length - 1 > l){
+          l++;
+        }
+      } else {
+        records[i].status = 'Not Revealed';
+        records[i].answer = 'Not Revealed';
+        records[i].pot = 0;        
+      }
+    }
+    this.setState({resultRecord:records});
   }
 
   getPotmoney = async () => {
@@ -186,7 +236,7 @@ constructor (props) {
               </tr>
             </thead>
             <tbody>
-                {this.state.betRecord.map((record,index) => {
+                {this.state.resultRecord.map((record,index) => {
                   return (
                     <tr key={index}>
                       <td>{record.index}</td>
@@ -194,8 +244,8 @@ constructor (props) {
                       <td>{record.challenges}</td>
                       <td>{record.answer}</td>
                       <td>{record.answerBlockNumber}</td>
-                      <td>Status</td>
-                      <td>PotMoney</td>
+                      <td>{record.status}</td>
+                      <td>{record.pot}</td>
                     </tr>
                   )
                 })}           
