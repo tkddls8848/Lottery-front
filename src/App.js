@@ -16,9 +16,9 @@ constructor (props) {
     loseRecord : [],  
     potMoney : '0',
     challenges : ['A', 'B'],
-    resultRecode : [{
-      betAddress : '',
-      index : '0',
+    resultRecord : [{
+      betPerson : '',
+      betNumber : '0',
       challenges : '',
       answer : '',
       answerBlockNumber : '',
@@ -75,10 +75,12 @@ constructor (props) {
     
     let tryChall = '0x' + this.state.challenges[0].toLowerCase() + this.state.challenges[1].toLowerCase()
     let nonce = await this.web3.eth.getTransactionCount(account);
-    this.lotteryContract.methods.betAndDistribute(tryChall, {from:account, value:5000000000000000, gas:300000, nonce:nonce})
+    this.lotteryContract.methods.betAndDistribute(tryChall).send({from:account, value:5000000000000000, gas:300000, nonce:nonce})
     .on('transactionHash', (hash) => {
       console.log(hash);
-    })
+    });
+
+    
   }
 
   onClickCard = (character) => {
@@ -90,6 +92,21 @@ constructor (props) {
   getBetEvent = async () => {
     let events = await this.lotteryContract.getPastEvents('BET', {fromBlock:0, toBlock:'latest'});
     console.log(events);
+
+    const records = [];
+    for(let i = 0 ; i < events.length ; i ++){
+      const record = {};
+      record.index = parseInt(events[i].returnValues.index, '10').toString();
+      record.betPerson = events[i].returnValues.betPerson;
+      record.betBlockNumber = events[i].blockNumber;
+      record.answerBlockNumber = events[i].returnValues.answerBlockNumber.toString();
+      record.challenges = events[i].returnValues.challenges;
+      record.win = 'Not revealed';
+      record.answer = '0x00';
+      records.unshift(record);
+    }
+    console.log(records);
+    this.setState({betRecord:records})
   }
 
   getPotmoney = async () => {
@@ -112,12 +129,18 @@ constructor (props) {
     return (
       <div className="App">
         <div className="container">
+
+          <div name='blank'>
+            <br></br>
+          </div>
+
           <div className="jumbotron">
             <h1>Lottery</h1>
             challenges : {this.state.challenges[0]} {this.state.challenges[1]}
             <h3>Pot Money : {this.state.potMoney}</h3>
           </div>
         </div>
+        
         <div className='container'>
           <div className='card-group'>
             {this.getCard('0', 'card bg-primary')}
@@ -163,14 +186,14 @@ constructor (props) {
               </tr>
             </thead>
             <tbody>
-                {this.state.resultRecode.map((index,recode) => {
+                {this.state.betRecord.map((record,index) => {
                   return (
                     <tr key={index}>
-                      <td>Index</td>
-                      <td>Address</td>
-                      <td>Challenges</td>
-                      <td>Answer</td>
-                      <td>AnswerBlockNumber</td>
+                      <td>{record.index}</td>
+                      <td>{record.betPerson}</td>
+                      <td>{record.challenges}</td>
+                      <td>{record.answer}</td>
+                      <td>{record.answerBlockNumber}</td>
                       <td>Status</td>
                       <td>PotMoney</td>
                     </tr>
